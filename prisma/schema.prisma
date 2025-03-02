@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Region {
+  id         Int          @id @default(autoincrement())
+  name       String
+  User       User[]
+  BannerItem BannerItem[]
+}
+
+model Category {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Banner Banner[]
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  fullName String
+  phone    String
+  email    String
+  password String
+  balance  Float     @default(5000)
+  role     Role      @default(USER)
+  status   Boolean   @default(false)
+  regionId Int
+  region   Region    @relation(fields: [regionId], references: [id])
+  Banner   Banner[]
+  Donate   Donate[]
+  Like     Like[]
+  Comment  Comment[]
+}
+
+model Banner {
+  id          Int          @id @default(autoincrement())
+  image       String
+  title       String
+  description String
+  target      Float
+  balance     Float        @default(0)
+  status      Status       @default(PENDING)
+  authorId    Int
+  categoryId  Int
+  author      User         @relation(fields: [authorId], references: [id])
+  category    Category     @relation(fields: [categoryId], references: [id])
+  BannerItem  BannerItem[]
+  Donate      Donate[]
+  Like        Like[]
+  Comment     Comment[]
+}
+
+model BannerItem {
+  id       Int    @id @default(autoincrement())
+  bannerId Int
+  regionId Int
+  banner   Banner @relation(fields: [bannerId], references: [id])
+  region   Region @relation(fields: [regionId], references: [id])
+}
+
+model Donate {
+  id       Int    @id @default(autoincrement())
+  summa    Float
+  userId   Int
+  bannerId Int
+  user     User   @relation(fields: [userId], references: [id])
+  banner   Banner @relation(fields: [bannerId], references: [id])
+}
+
+model Like {
+  id       Int    @id @default(autoincrement())
+  bannerId Int
+  userId   Int
+  banner   Banner @relation(fields: [bannerId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+}
+
+model Comment {
+  id       Int    @id @default(autoincrement())
+  text     String
+  bannerId Int
+  userId   Int
+  banner   Banner @relation(fields: [bannerId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
